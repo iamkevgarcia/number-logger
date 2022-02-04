@@ -1,0 +1,73 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.6.10"
+    id 'application'
+}
+
+mainClassName = "com.numberlogger.AppKt"
+
+
+apply plugin: "groovy"
+apply plugin: "idea"
+apply plugin: "kotlin"
+
+ext {
+    kotlinVersion = '1.6.10'
+    groovyVersion = '3.0.8'
+    spockVersion = '2.1-M2-groovy-3.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "11"
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "11"
+}
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+dependencies {
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.10.4'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation group: 'com.google.inject', name: 'guice', version: '5.0.1'
+
+
+    testImplementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: spockVersion
+}
+
+compileTestGroovy {
+    dependsOn tasks.getByPath('compileTestKotlin')
+    classpath += files(compileTestKotlin.destinationDir)
+}
+
+test {
+    useJUnitPlatform()
+}
+
+normalization {
+    runtimeClasspath {
+        ignore "META-INF/MANIFEST.MF"
+        ignore "logback.xml"
+    }
+}
+
+test.outputs.dirs("${project.buildDir}/spock/logs")
+
+configurations.all {
+    resolutionStrategy {
+        failOnNonReproducibleResolution()
+    }
+}
+
+wrapper {
+    gradleVersion = '7.3.3'
+    distributionType = Wrapper.DistributionType.ALL
+}
